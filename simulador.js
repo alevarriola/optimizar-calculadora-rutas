@@ -1,4 +1,4 @@
-class SimuladorRutas{
+export class SimuladorRutas{
 
     // iniciamos nuestra clase con los atributos
     constructor(filas, columnas, contenedor){
@@ -8,7 +8,7 @@ class SimuladorRutas{
         this.tablero = [];
     }
 
-    generarTablero() {
+    generarTablero(getEstado) {
 
         // definimos nuestro contenedor para el tablero
         this.contenedor.innerHTML = "";
@@ -29,8 +29,9 @@ class SimuladorRutas{
                 celda.style.height = "20px";
 
                 // cada celda tiene esta funcion adentro
-                celda.addEventListener("click", function () {
-                    if (estado === 3) {
+                celda.addEventListener("click", () => {
+                    const estadoActual = getEstado();
+                    if (estadoActual === 3) {
                         // Definir entrada o salida
                         if (!document.querySelector('[data-entrada="true"]')) {
                             celda.classList.add("bg-green-700");
@@ -40,7 +41,7 @@ class SimuladorRutas{
                             celda.dataset.salida = "true";
                         }
 
-                    } else if (estado === 4) {
+                    } else if (estadoActual === 4) {
                         // Alternar como celda ocupada
                         celda.classList.toggle("bg-gray-400");
                         celda.dataset.ocupado = celda.dataset.ocupado === "true" ? "false" : "true";
@@ -151,4 +152,132 @@ class SimuladorRutas{
             }
         }
     }
+    // Función heurística: distancia Manhattan
+    heuristica(a, b) {
+        return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    }
+
+    // dependiendo de lo que busque, retornar coordenadas
+    encontrarCelda(tipo) {
+        const celda = document.querySelector(`[data-${tipo}="true"]`);
+        if (!celda) return null;
+
+        for (let i = 0; i < this.tablero.length; i++) {
+            for (let j = 0; j < this.tablero[0].length; j++) {
+                if (this.tablero[i][j] === celda) return { x: i, y: j };
+            }
+        }
+        return null;
+    }
+
+    // con la coordenada que le damos y la lista padre, retornar una lista con el camino a recorrer
+    reconstruirCamino(padre, actual) {
+        const camino = [actual];
+
+        // mientras mi dato tenga un padre
+        while (padre.has(`${actual.x},${actual.y}`)) {
+            actual = padre.get(`${actual.x},${actual.y}`);
+
+            // agregamos al comienzo de la lista
+            camino.unshift(actual);
+        }
+        return camino;
+    }
+    async moverPasoAPaso() {
+        
+        let actual = this.encontrarCelda("entrada");
+
+        while (true) {
+            // guardamos la variable salida y verificamos si existe
+            const salida = this.encontrarCelda("salida");
+            if (!salida) return;
+
+            // optenemos el camino y verificamos que exista
+            const camino = this.encontrarCamino(actual, salida);
+            if (!camino || camino.length < 2) {
+                console.warn("No hay camino disponible");
+                return;
+            }
+
+            // Avanzamos al siguiente paso
+            const siguiente = camino[1];
+            actual = siguiente;
+
+            // cambiamos el color de la celda
+            const celda = this.tablero[siguiente.x][siguiente.y];
+            celda.classList.add("bg-green-400");
+
+            // si es la salida rompemos el buble
+            if (celda.dataset.salida === "true") {
+                console.log("Llegamos a la salida");
+                break;
+            }
+
+            // esperamos 0.3 seg
+            await new Promise((res) => setTimeout(res, 300));
+        }
+    }
+
+    encontrarCamino(entrada, salida) {
+
+        // Nodo inicial y final
+        const inicio = { x: entrada.x, y: entrada.y, g: 0, f: 0 };
+        const fin = { x: salida.x, y: salida.y };
+
+        // lista de lugares a explorar y diccionario donde guardamos el padre
+        const openSet = [inicio];
+        const padres = new Map();
+
+        // una cordenada otrogada transformamos a texto, e iniciamos nuestro gscore
+        const key = (coord) => `${coord.x},${coord.y}`;
+        const gScore = new Map();
+        gScore.set(key(inicio), 0);
+
+
+        while (openSet.length > 0) {
+            // ordenamos por f mas baja
+            openSet.sort((a, b) => a.f - b.f);
+            const nodoActual = openSet.shift();
+
+            // si es la salida retornamos la lista del camino
+            if (nodoActual.x === fin.x && nodoActual.y === fin.y) {
+                return this.reconstruirCamino(padres, nodoActual);
+            }
+
+            // si no, recorremos todos sus vecinos
+            for (const [dx, dy] of [[0,1], [1,0], [0,-1], [-1,0]]) {
+                const nx = nodoActual.x + dx;
+                const ny = nodoActual.y + dy;
+
+                // verificamos que este dentro del tablero
+                if (nx < 0 || ny < 0 || nx >= this.filas || ny >= this.columnas) continue;
+
+                // verificamos que no sea una cuadra
+                const vecino = this.tablero[nx][ny];
+                if (vecino.dataset.ocupado === "true") continue;
+
+                // transformamos a key y optenemos su costo en G
+                const vecinoKey = key({ x: nx, y: ny });
+                const costoG = gScore.get(key(nodoActual)) + 1;
+
+                // si no tiene un gscore, o su score es menos al score ya asignado a esa celda
+                if (!gScore.has(vecinoKey) || costoG < gScore.get(vecinoKey)) {
+
+                    // asignamos como nuevo gscore y amacenamos su padre
+                    padres.set(vecinoKey, nodoActual);
+                    gScore.set(vecinoKey, costoG);
+
+                    // calculamos la heuristica y agregamos a la lista de openset
+                    const costoGF = costoG + this.heuristica({x: nx, y: ny}, fin);
+                    openSet.push({ x: nx, y: ny, g: costoG, f: costoGF });
+                }
+            }
+        }
+        console.warn("No se encontró un camino");
+    }
+
+
+    resetearTablero() {
+        location.reload();
+    };
 };
