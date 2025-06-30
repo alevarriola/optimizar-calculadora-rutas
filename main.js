@@ -3,6 +3,9 @@ const boton = document.getElementById("boton-principal");
 const contenedor = document.getElementById("tablero");
 const cuerpo = document.getElementById("cuerpo")
 
+// instancia global para el simulador de tablero
+let simulador = null;
+
 // una variable para la accion del boton principal
 let estado = 0;
 
@@ -53,7 +56,8 @@ boton.addEventListener("click", function() {
         }
 
         // llamamos a la funcion generar tablero
-        generarTablero(filas, columnas);
+        simulador = new SimuladorRutas(filas, columnas, contenedor);
+        simulador.generarTablero();
 
         // removemos los inputs del cuerpo
         document.getElementById("input-filas").remove();
@@ -68,7 +72,7 @@ boton.addEventListener("click", function() {
     else if (estado === 2) {
 
         // llamamos a la funcion generar cuadras
-        generarCuadras(tablero, filas, columnas);
+        simulador.generarCuadras();
 
         // cambiamos texto y vamos al ultimo paso
         boton.textContent = "Resolver tablero"; 
@@ -98,150 +102,6 @@ boton.addEventListener("click", function() {
         resetearTablero();
      }
 });
-
-
-function generarTablero(filas, columnas) {
-
-    // definimos nuestro contenedor para el tablero
-    contenedor.style.display = "grid";
-    contenedor.style.gridTemplateColumns = `repeat(${columnas}, 20px)`;
-    contenedor.style.gridTemplateRows  = `repeat(${filas}, 20px)`;
-
-    // recorremos nuestro tablero 
-    for (let i = 0; i < filas; i++) {
-         const fila = [];
-
-        for (let j = 0; j < columnas; j++) {
-
-            // Crear elemento celda
-            const celda = document.createElement("button");
-            celda.className = "bg-blue-100 border border-white";
-            celda.style.width = "20px";
-            celda.style.height = "20px";
-
-            // cada celda tiene esta funcion adentro
-            celda.addEventListener("click", function () {
-                if (estado === 3) {
-                    // Definir entrada o salida
-                    if (!document.querySelector('[data-entrada="true"]')) {
-                        celda.classList.add("bg-green-700");
-                        celda.dataset.entrada = "true";
-                    } else if (!document.querySelector('[data-salida="true"]')) {
-                        celda.classList.add("bg-red-700");
-                        celda.dataset.salida = "true";
-                    }
-
-                } else if (estado === 4) {
-                    // Alternar como celda ocupada
-                    celda.classList.toggle("bg-gray-400");
-                    celda.dataset.ocupado = celda.dataset.ocupado === "true" ? "false" : "true";
-                }
-            });
-
-            // Agregarlo al body
-            contenedor.appendChild(celda);
-            fila.push(celda);
-        }
-        tablero.push(fila);
-    }
-};
-
-function generarCuadras(tablero, filas, columnas) {
-    // variable con el tamaño de nuestras cuadras
-    const cuadras = [
-        { ancho: 3, alto: 3 },
-        { ancho: 7, alto: 3 },
-        { ancho: 3, alto: 7 },
-    ];
-
-    // recorremos nuestro tablero de 4 en 4
-    for (let fila = 0; fila < filas; fila += 4) {
-        for (let columna = 0; columna < columnas; columna += 4) {
-
-            // mezclamos nuestras cuadras
-            const tiposAleatorios = [...cuadras].sort(() => Math.random() - 0.5);
-
-            // verificamos si podemos colocar una cradra
-            for (const tipo of tiposAleatorios) {
-                if (puedeColocarCuadra(tablero, fila, columna, tipo.ancho, tipo.alto, filas, columnas)) {
-
-                    // la colocamos y rompemos el bucle for
-                    colocarCuadra(tablero, fila, columna, tipo.ancho, tipo.alto);
-                    break; 
-                }
-            }
-        }
-    }
-    // rellenamos bordes horizontales
-    for (let fila = 0; fila < filas; fila += 4) {
-        
-        // verificamos el resto de columnas
-        const colRestante = columnas % 4;
-        const colInicio = columnas - colRestante;
-
-        // si el resto es mayor a 0
-        if (colRestante > 0) {
-
-            // probamos colocar 3 bloques, 2 0 1
-            for (let alto = 3; alto >= 1; alto--) {
-                const cuadra = { ancho: colRestante, alto: alto };
-
-                if (puedeColocarCuadra(tablero, fila, colInicio, cuadra.ancho, cuadra.alto, filas, columnas)) {
-                    colocarCuadra(tablero, fila, colInicio, cuadra.ancho, cuadra.alto);
-                    break;
-                }
-            }
-        }
-    }
-
-    // rellenamos bordes verticales 
-    for (let columna = 0; columna < columnas; columna += 4) {
-        const filaRestante = filas % 4;
-        const filaInicio = filas - filaRestante;
-
-        if (filaRestante > 0) {
-            for (let ancho = 3; ancho >= 1; ancho--) {
-                const cuadra = { ancho: ancho, alto: filaRestante };
-
-                if (puedeColocarCuadra(tablero, filaInicio, columna, cuadra.ancho, cuadra.alto, filas, columnas)) {
-                    colocarCuadra(tablero, filaInicio, columna, cuadra.ancho, cuadra.alto);
-                    break;
-                }
-            }
-        }
-    }
-}
-
-function puedeColocarCuadra(tablero, filaInicio, colInicio, ancho, alto, filasTotales, columnasTotales) {
-
-    // si la fila de inicion, + el tamaño de nuestra cuadra sale del mapa no colocamos cuadra
-    if (filaInicio + alto > filasTotales || colInicio + ancho > columnasTotales) return false;
-
-    // recorremos las filas y columnas que vamos a colocar
-    for (let filaColocar = filaInicio; filaColocar < filaInicio + alto; filaColocar++) {
-        for (let colColocar = colInicio; colColocar < colInicio + ancho; colColocar++) {
-            const celda = tablero[filaColocar][colColocar];
-            // si alguna de esas celtas esta ocupada no colocamos la cuadra
-            if (celda.dataset.ocupado === "true") return false;
-        }
-    }
-    // si nada se cumple colocamos
-    return true;
-}
-
-function colocarCuadra(tablero, filaInicio, colInicio, ancho, alto) {
-
-    // recorremos nuestras filas y columnas a colocar
-    for (let fila = filaInicio; fila < filaInicio + alto; fila++) {
-        for (let columna = colInicio; columna < colInicio + ancho; columna++) {
-            const celda = tablero[fila][columna];
-
-            // las cuadras pintamos de gris y marcamos como ocupado
-            celda.classList.add("bg-gray-700") 
-            celda.dataset.ocupado = "true"; 
-        }
-    }
-}
 
 async function moverPasoAPaso(tablero, filas, columnas) {
     
