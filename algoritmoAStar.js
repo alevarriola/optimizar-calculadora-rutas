@@ -1,16 +1,17 @@
 export class AlgoritmoAStar {
     
-    constructor (tablero){ 
-        this.tablero = tablero
-        this.filas = tablero.filas
-        this.columnas = tablero.columnas
-        this.celda = tablero.tablero
+    // constructor para manejar algoritmo con una matriz
+    constructor (matriz){ 
+        this.matriz = matriz;
+        this.filas = matriz.length;
+        this.columnas = matriz[0].length;
     }
     // Función heurística: distancia Manhattan
     heuristica(a, b) {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
+    // algoritmo AStar
     encontrarCamino(entrada, salida) {
 
         // Nodo inicial y final
@@ -46,8 +47,7 @@ export class AlgoritmoAStar {
                 if (nx < 0 || ny < 0 || nx >= this.filas || ny >= this.columnas) continue;
 
                 // verificamos que no sea una cuadra
-                const vecino = this.celda[nx][ny];
-                if (vecino.dataset.ocupado === "true") continue;
+                if (this.matriz[nx][ny] === 1) continue;
 
                 // transformamos a key y optenemos su costo en G
                 const vecinoKey = key({ x: nx, y: ny });
@@ -67,6 +67,7 @@ export class AlgoritmoAStar {
             }
         }
         console.warn("No se encontró un camino");
+        return null;
     }
 
     // con la coordenada que le damos y la lista padre, retornar una lista con el camino a recorrer

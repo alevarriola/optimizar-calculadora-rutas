@@ -8,6 +8,17 @@ export class Tablero {
         this.tablero = [];
     }
 
+    // funcion para optimizar y no manejar algoritmo con DOM
+    generarMatrizEstado() {
+        return this.tablero.map(fila => fila.map(celda => {
+            if (celda.dataset.ocupado === "true") return 1;
+            if (celda.dataset.entrada === "true") return 2;
+            if (celda.dataset.salida === "true") return 3;
+            return 0;
+        }));
+    }
+
+    // generar tablero visualmente
     generarTablero(getEstado) {
 
         // definimos nuestro contenedor para el tablero
@@ -56,6 +67,7 @@ export class Tablero {
         }
     }
 
+    // funcion para generar cuadras (celdas ocupadas) en el tablero
     generarCuadras() {
         // variable con el tamaño de nuestras cuadras
         const cuadras = [
@@ -122,6 +134,7 @@ export class Tablero {
         }
     }
 
+    // funcion para verificar que donde colocare una cuadra no hay celda ocupada ya
     puedeColocarCuadra(filaInicio, colInicio, ancho, alto) {
 
         // si la fila de inicion, + el tamaño de nuestra cuadra sale del mapa no colocamos cuadra
@@ -139,6 +152,7 @@ export class Tablero {
         return true;
     }
 
+    // recorrer las celdas para colocar cuadras, pintarlas y cambiar dataset.ocupado
     colocarCuadra(filaInicio, colInicio, ancho, alto) {
 
         // recorremos nuestras filas y columnas a colocar
@@ -152,7 +166,7 @@ export class Tablero {
             }
         }
     }
-    
+
     // dependiendo de lo que busque, retornar coordenadas
     encontrarCelda(tipo) {
         const celda = document.querySelector(`[data-${tipo}="true"]`);
@@ -166,6 +180,7 @@ export class Tablero {
         return null;
     }
 
+    // recarga de pagina
     resetearTablero() {
         location.reload();
     };

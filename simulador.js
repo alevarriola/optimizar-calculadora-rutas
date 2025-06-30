@@ -3,19 +3,27 @@ import { AlgoritmoAStar } from "./algoritmoAStar.js";
 
 export class SimuladorRutas{
 
+    // atributos del tablero y el algoritmo
     constructor(filas, columnas, contenedor){
         this.tablero = new Tablero(filas, columnas, contenedor);
-        this.algoritmo = new AlgoritmoAStar(this.tablero);
+        this.algoritmo = null;
     }
 
+    // funcion asincrona para mover paso a paso el algoritmo
     async moverPasoAPaso() {
         
+        // guardamos las variable salida y salida
         let actual = this.tablero.encontrarCelda("entrada");
+        const salida = this.tablero.encontrarCelda("salida");
+
+        //  verificamos si existen
+        if (!salida || !actual) return;
 
         while (true) {
-            // guardamos la variable salida y verificamos si existe
-            const salida = this.tablero.encontrarCelda("salida");
-            if (!salida) return;
+
+            // actualizar matriz y algoritmo antes de cada cálculo
+            const matriz = this.tablero.generarMatrizEstado();
+            this.algoritmo = new AlgoritmoAStar(matriz);
 
             // optenemos el camino y verificamos que exista
             const camino = this.algoritmo.encontrarCamino(actual, salida);
