@@ -56,7 +56,7 @@ boton.addEventListener("click", function() {
 
         // iniciamos la clase simulador y llamamos al metodo generarTablero
         simulador = new SimuladorRutas(filas, columnas, contenedor);
-        simulador.generarTablero(() => estado);
+        simulador.tablero.generarTablero(() => estado);
 
         // removemos los inputs del cuerpo
         document.getElementById("input-filas").remove();
@@ -71,7 +71,7 @@ boton.addEventListener("click", function() {
     else if (estado === 2) {
 
         // llamamos a la funcion generar cuadras
-        simulador.generarCuadras();
+        simulador.tablero.generarCuadras();
 
         // cambiamos texto y vamos al ultimo paso
         boton.textContent = "Resolver tablero"; 
@@ -98,7 +98,7 @@ boton.addEventListener("click", function() {
 
      // damos click a resetear tablero
      else if (estado === 4) {
-        simulador.resetearTablero();
+        simulador.tablero.resetearTablero();
      }
 });
 
