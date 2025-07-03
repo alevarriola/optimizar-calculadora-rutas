@@ -1,5 +1,5 @@
 import { Tablero } from "./tablero.js";
-import { AlgoritmoAStar } from "./algoritmoAStar.js";
+import { AlgoritmoAStar } from "./algoritmo/algoritmoAStar.js";
 
 export class SimuladorRutas{
 

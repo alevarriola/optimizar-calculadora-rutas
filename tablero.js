@@ -85,10 +85,10 @@ export class Tablero {
 
                 // verificamos si podemos colocar una cradra
                 for (const tipo of tiposAleatorios) {
-                    if (this.puedeColocarCuadra(fila, columna, tipo.ancho, tipo.alto)) {
+                    if (this.#puedeColocarCuadra(fila, columna, tipo.ancho, tipo.alto)) {
 
                         // la colocamos y rompemos el bucle for
-                        this.colocarCuadra(fila, columna, tipo.ancho, tipo.alto);
+                        this.#colocarCuadra(fila, columna, tipo.ancho, tipo.alto);
                         break; 
                     }
                 }
@@ -108,8 +108,8 @@ export class Tablero {
                 for (let alto = 3; alto >= 1; alto--) {
                     const cuadra = { ancho: colRestante, alto: alto };
 
-                    if (this.puedeColocarCuadra(fila, colInicio, cuadra.ancho, cuadra.alto)) {
-                        this.colocarCuadra(fila, colInicio, cuadra.ancho, cuadra.alto);
+                    if (this.#puedeColocarCuadra(fila, colInicio, cuadra.ancho, cuadra.alto)) {
+                        this.#colocarCuadra(fila, colInicio, cuadra.ancho, cuadra.alto);
                         break;
                     }
                 }
@@ -125,8 +125,8 @@ export class Tablero {
                 for (let ancho = 3; ancho >= 1; ancho--) {
                     const cuadra = { ancho: ancho, alto: filaRestante };
 
-                    if (this.puedeColocarCuadra(filaInicio, columna, cuadra.ancho, cuadra.alto)) {
-                        this.colocarCuadra(filaInicio, columna, cuadra.ancho, cuadra.alto);
+                    if (this.#puedeColocarCuadra(filaInicio, columna, cuadra.ancho, cuadra.alto)) {
+                        this.#colocarCuadra(filaInicio, columna, cuadra.ancho, cuadra.alto);
                         break;
                     }
                 }
@@ -135,7 +135,7 @@ export class Tablero {
     }
 
     // funcion para verificar que donde colocare una cuadra no hay celda ocupada ya
-    puedeColocarCuadra(filaInicio, colInicio, ancho, alto) {
+    #puedeColocarCuadra(filaInicio, colInicio, ancho, alto) {
 
         // si la fila de inicion, + el tamaño de nuestra cuadra sale del mapa no colocamos cuadra
         if (filaInicio + alto > this.filas || colInicio + ancho > this.columnas) return false;
@@ -153,7 +153,7 @@ export class Tablero {
     }
 
     // recorrer las celdas para colocar cuadras, pintarlas y cambiar dataset.ocupado
-    colocarCuadra(filaInicio, colInicio, ancho, alto) {
+    #colocarCuadra(filaInicio, colInicio, ancho, alto) {
 
         // recorremos nuestras filas y columnas a colocar
         for (let fila = filaInicio; fila < filaInicio + alto; fila++) {

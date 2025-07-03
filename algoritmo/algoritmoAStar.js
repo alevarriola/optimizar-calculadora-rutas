@@ -1,13 +1,20 @@
-export class AlgoritmoAStar {
+import { Nodo } from './nodo.js';
+import { AlgoritmoBusqueda } from './algoritmoBusqueda.js';
+
+export class AlgoritmoAStar extends AlgoritmoBusqueda {
     
-    // constructor para manejar algoritmo con una matriz
+    #matriz;
+    #filas;
+    #columnas;
+
     constructor (matriz){ 
-        this.matriz = matriz;
-        this.filas = matriz.length;
-        this.columnas = matriz[0].length;
+        super(); // Obligatorio al heredar
+        this.#matriz = matriz;
+        this.#filas = matriz.length;
+        this.#columnas = matriz[0].length;
     }
     // Función heurística: distancia Manhattan
-    heuristica(a, b) {
+    #heuristica(a, b) {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     }
 
@@ -15,7 +22,7 @@ export class AlgoritmoAStar {
     encontrarCamino(entrada, salida) {
 
         // Nodo inicial y final
-        const inicio = { x: entrada.x, y: entrada.y, g: 0, f: 0 };
+        const inicio = new Nodo(entrada.x, entrada.y, 0, 0)
         const fin = { x: salida.x, y: salida.y };
 
         // lista de lugares a explorar y diccionario donde guardamos el padre
@@ -43,11 +50,8 @@ export class AlgoritmoAStar {
                 const nx = nodoActual.x + dx;
                 const ny = nodoActual.y + dy;
 
-                // verificamos que este dentro del tablero
-                if (nx < 0 || ny < 0 || nx >= this.filas || ny >= this.columnas) continue;
-
-                // verificamos que no sea una cuadra
-                if (this.matriz[nx][ny] === 1) continue;
+                // verificamos que este dentro del tablero y no sea obstaculo
+                if (!this.#esValido(nx, ny)) continue;
 
                 // transformamos a key y optenemos su costo en G
                 const vecinoKey = key({ x: nx, y: ny });
@@ -61,8 +65,9 @@ export class AlgoritmoAStar {
                     gScore.set(vecinoKey, costoG);
 
                     // calculamos la heuristica y agregamos a la lista de openset
-                    const costoGF = costoG + this.heuristica({x: nx, y: ny}, fin);
-                    openSet.push({ x: nx, y: ny, g: costoG, f: costoGF });
+                    const costoGF = costoG + this.#heuristica({x: nx, y: ny}, fin);
+                    const nodo = new Nodo(nx, ny, costoG, costoGF)
+                    openSet.push(nodo);
                 }
             }
         }
@@ -70,17 +75,12 @@ export class AlgoritmoAStar {
         return null;
     }
 
-    // con la coordenada que le damos y la lista padre, retornar una lista con el camino a recorrer
-    reconstruirCamino(padre, actual) {
-        const camino = [actual];
-
-        // mientras mi dato tenga un padre
-        while (padre.has(`${actual.x},${actual.y}`)) {
-            actual = padre.get(`${actual.x},${actual.y}`);
-
-            // agregamos al comienzo de la lista
-            camino.unshift(actual);
-        }
-        return camino;
+    // metodo para verificar que este dentro del tablero y no sea un obstaculo
+    #esValido(x, y) {
+        return (
+            x >= 0 && y >= 0 &&
+            x < this.#filas && y < this.#columnas &&
+            this.#matriz[x][y] !== 1
+        );
     }
 }
