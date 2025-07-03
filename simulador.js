@@ -1,4 +1,4 @@
-import { Tablero } from "./tablero.js";
+import { Tablero } from "./tablero/tablero.js";
 import { AlgoritmoAStar } from "./algoritmo/algoritmoAStar.js";
 
 export class SimuladorRutas{
@@ -19,6 +19,9 @@ export class SimuladorRutas{
         //  verificamos si existen
         if (!salida || !actual) return;
 
+        // variable para manejar dos colores
+        let celdaAnterior = null;
+
         while (true) {
 
             // actualizar matriz y algoritmo antes de cada cálculo
@@ -35,10 +38,18 @@ export class SimuladorRutas{
             // Avanzamos al siguiente paso
             const siguiente = camino[1];
             actual = siguiente;
-
-            // cambiamos el color de la celda
             const celda = this.tablero.tablero[siguiente.x][siguiente.y];
-            celda.classList.add("bg-green-400");
+
+            // cambiamos el color de la celda anterior
+            if (celdaAnterior) {
+            celdaAnterior.classList.remove("bg-yellow-400"); 
+            celdaAnterior.classList.add("bg-green-200");     
+            }
+
+            // Pintar la nueva celda actual
+            celda.classList.remove("bg-green-200");
+            celda.classList.add("bg-yellow-400");
+            celdaAnterior = celda;
 
             // si es la salida rompemos el buble
             if (celda.dataset.salida === "true") {
