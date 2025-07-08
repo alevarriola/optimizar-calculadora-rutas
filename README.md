@@ -75,7 +75,7 @@ Usá el botón "Iniciar" y seguí el flujo:
 
 Alejandro A.
 
-Desarrollador en constante formación.
+Programador en constante formación.
 
 GitHub: @alevarriola
 
